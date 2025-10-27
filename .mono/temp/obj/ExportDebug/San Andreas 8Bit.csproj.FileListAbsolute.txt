@@ -1,0 +1,9 @@
+Z:\Documents\Godot Projects\San Andreas 8Bit\.mono\temp\bin\ExportDebug\San Andreas 8Bit.dll
+Z:\Documents\Godot Projects\San Andreas 8Bit\.mono\temp\bin\ExportDebug\San Andreas 8Bit.pdb
+Z:\Documents\Godot Projects\San Andreas 8Bit\.mono\temp\obj\ExportDebug\San Andreas 8Bit.csproj.AssemblyReference.cache
+Z:\Documents\Godot Projects\San Andreas 8Bit\.mono\temp\obj\ExportDebug\San Andreas 8Bit.GeneratedMSBuildEditorConfig.editorconfig
+Z:\Documents\Godot Projects\San Andreas 8Bit\.mono\temp\obj\ExportDebug\San Andreas 8Bit.AssemblyInfoInputs.cache
+Z:\Documents\Godot Projects\San Andreas 8Bit\.mono\temp\obj\ExportDebug\San Andreas 8Bit.AssemblyInfo.cs
+Z:\Documents\Godot Projects\San Andreas 8Bit\.mono\temp\obj\ExportDebug\San Andreas 8Bit.csproj.CoreCompileInputs.cache
+Z:\Documents\Godot Projects\San Andreas 8Bit\.mono\temp\obj\ExportDebug\San Andreas 8Bit.dll
+Z:\Documents\Godot Projects\San Andreas 8Bit\.mono\temp\obj\ExportDebug\San Andreas 8Bit.pdb
