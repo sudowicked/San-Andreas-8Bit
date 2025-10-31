@@ -1,290 +1,178 @@
 using Godot;
 using System;
-using System.ComponentModel;
-using System.Threading.Tasks;
 
 public class Player : KinematicBody2D
 {
-    [Export]
-    public int Speed = 80;
-    public Node2D background;
-    public Vector2 screenSize;
-    public AnimatedSprite animatedSprite;
-    public Camera2D camera;
-    public float maxPositionX = 0;
-    public bool weaponEquipped = false;
-    public string[] playerDirections = { "back", "front", "right", "left" };
-    public string currentDirection;
+    [Export] public int walkSpeed = 80, runSpeed = 160;
+    private int speed;
 
-    // Called when the node enters the scene tree for the first time.
+    private Vector2 screenSize;
+    private AnimatedSprite animatedSprite;
+    private Camera2D camera;
+    private float maxPositionX;
+    private bool weaponEquipped, isZooming;
+
+    private enum Direction {Back, Front, Right, Left};
+    private Direction currentDirection = Direction.Back;
+
     public override void _Ready()
     {
         Engine.TargetFps = 30;
 
-        background = GetNode<Node2D>("../ParallaxBackground/ParallaxLayer/BackgroundPivot");
         screenSize = GetViewportRect().Size;
 
-        // Each background sprite has a width of 320px. We have 5 sprites in total so 1600px of width.
+        // Each background sprite has a width of 320px. We have 5 sprites in total so 1600px of width
         // In order to set the boundaries of where the player can move we need to first subtract the actual viewport width 
         // and then divide by 2 because the player is placed in the center of the screen
-        maxPositionX = (1600 - screenSize.x) / 2; // For 640px we get 480px - Works for any viewport width
+        maxPositionX = (1600 - screenSize.x) / 2f; // For 640px we get 480px - Works for any viewport width
 
         camera = GetNode<Camera2D>("Camera2D");
         animatedSprite = GetNode<AnimatedSprite>("AnimatedSprite");
 
-        // Setting the current direction variable to "back"
-        currentDirection = playerDirections[0];
-        animatedSprite.Animation = "CJ_Idle_Back";
+        // Setting initial player animation and spee
+        SetAnimation("CJ_Idle_Back");
+        speed = walkSpeed;
+    }
+
+    public override void _Process(float delta)
+    {
+        Vector2 velocity = GetMovementInput();
+
+        // Updating player position
+        Position += velocity * delta;
+
+        HandleWeaponInput(velocity);
+        ClampPlayer();
     }
     
-
-    public void Rifle_Method()
+    private Vector2 GetMovementInput()
     {
-        // Weapon equip
-        if (Input.IsActionPressed("rifle") && !weaponEquipped)
-        {
-            weaponEquipped = true;
-            if (currentDirection == "back")
-            {
-                animatedSprite.Animation = "CJ_Idle_Rifle_Back";
-            }
-            else if (currentDirection == "front")
-            {
-                animatedSprite.Animation = "CJ_Idle_Rifle_Front";
-            }
-            else if (currentDirection == "right")
-            {
-                animatedSprite.FlipH = false;
-                animatedSprite.Animation = "CJ_Idle_Rifle_Side";
-            }
-            else
-            {
-                animatedSprite.FlipH = false;
-                animatedSprite.Animation = "CJ_Idle_Rifle_Side_Left";
-            }
-        }
-        if (Input.IsActionPressed("unequip") && weaponEquipped)
-        {
-            weaponEquipped = false;
-            if (currentDirection == "back")
-            {
-                animatedSprite.Animation = "CJ_Idle_Back";
-            }
-            else if (currentDirection == "front")
-            {
-                animatedSprite.Animation = "CJ_Idle_Front";
-            }
-            else if (currentDirection == "right")
-            {
-                animatedSprite.FlipH = false;
-                animatedSprite.Animation = "CJ_Idle_Side";
-            }
-            else
-            {
-                animatedSprite.FlipH = true;
-                animatedSprite.Animation = "CJ_Idle_Side";
-            }
-        }
-    }
+        Vector2 velocity = Vector2.Zero;
 
-    public Vector2 GetInput()
-    {
-        var velocity = Vector2.Zero;
-
-        // Keyboard movement logic
         if (Input.IsActionPressed("left"))
         {
-            currentDirection = playerDirections[3];
+            currentDirection = Direction.Left;
             velocity.x -= 1;
-            animatedSprite.FlipH = true;
-            if (Input.IsActionPressed("run"))
-            {
-                Speed = 160;
-                if (weaponEquipped)
-                {
-                    animatedSprite.FlipH = false;
-                    animatedSprite.Animation = "CJ_Run_Side_Rifle_Left";
-                }
-                else
-                {
-                   animatedSprite.Animation = "CJ_Run_Side";  
-                }       
-            }
-            else
-            {
-                Speed = 80;
-                if (weaponEquipped)
-                {
-                    animatedSprite.FlipH = false;
-                    animatedSprite.Animation = "CJ_Walk_Side_Rifle_Left";
-                }
-                else
-                {
-                    animatedSprite.Animation = "CJ_Walk_Side";                    
-                }
-            }
+            HorizontalAnimation(isRight: false);
         }
         else if (Input.IsActionPressed("right"))
         {
-            currentDirection = playerDirections[2];
+            currentDirection = Direction.Right;
             velocity.x += 1;
-            animatedSprite.FlipH = false;
-            if (Input.IsActionPressed("run"))
-            {
-                Speed = 160;
-                if (weaponEquipped)
-                {
-                    animatedSprite.FlipH = false;
-                    animatedSprite.Animation = "CJ_Run_Side_Rifle";
-                }
-                else
-                {
-                   animatedSprite.Animation = "CJ_Run_Side";  
-                }   
-            }
-            else
-            {
-                Speed = 80;
-                if (weaponEquipped)
-                {
-                    animatedSprite.Animation = "CJ_Walk_Side_Rifle";
-                }
-                else
-                {
-                    animatedSprite.Animation = "CJ_Walk_Side";                    
-                }
-            }
+            HorizontalAnimation(isRight: true);
         }
-        else if (Input.IsActionPressed("up"))
+        else if (Input.IsActionPressed("forward"))
         {
-            currentDirection = playerDirections[0];
-            if (Input.IsActionPressed("run"))
-            {
-                camera.Zoom -= new Vector2(.012f, .012f);
-                if (weaponEquipped)
-                {
-                    animatedSprite.Animation = "CJ_Run_Back_Rifle";
-                }
-                else
-                {
-                   animatedSprite.Animation = "CJ_Run_Back";  
-                }   
-            }
-            else
-            {
-                camera.Zoom -= new Vector2(.006f, .006f);
-                if (weaponEquipped)
-                {
-                    animatedSprite.Animation = "CJ_Walk_Back_Rifle";
-                }
-                else
-                {
-                    animatedSprite.Animation = "CJ_Walk_Back";                    
-                }
-            }
-
+            currentDirection = Direction.Back;
+            isZooming = true;
+            VerticalAnimation(isDown: false);
         }
-        else if (Input.IsActionPressed("down"))
+        else if (Input.IsActionPressed("backwards"))
         {
-            currentDirection = playerDirections[1];
-            if (Input.IsActionPressed("run"))
-            {
-                camera.Zoom += new Vector2(.012f, .012f);
-                if (weaponEquipped)
-                {
-                    animatedSprite.Animation = "CJ_Run_Front_Rifle";
-                }
-                else
-                {
-                   animatedSprite.Animation = "CJ_Run_Front";  
-                }    
-            }    
-            else
-            {
-                camera.Zoom += new Vector2(.006f, .006f);
-                if (weaponEquipped)
-                {
-                    animatedSprite.Animation = "CJ_Walk_Front_Rifle";
-                }
-                else
-                {
-                    animatedSprite.Animation = "CJ_Walk_Front";                    
-                }
-            }
+            currentDirection = Direction.Front;
+            isZooming = true;
+            VerticalAnimation(isDown: true);
         }
 
+        SetIdleAnimation(velocity);
 
-
-
-        // Returning to idle state after walking
-        if (Input.IsActionJustReleased("left"))
-        {
-            if (weaponEquipped)
-            {
-                animatedSprite.FlipH = false;
-                animatedSprite.Animation = "CJ_Idle_Rifle_Side_Left";
-            }
-            else
-            {
-                animatedSprite.Animation = "CJ_Idle_Side";
-            }
-        }
-        else if (Input.IsActionJustReleased("right"))
-        {
-            if (weaponEquipped)
-            {
-                animatedSprite.Animation = "CJ_Idle_Rifle_Side";
-            }
-            else
-            {
-                animatedSprite.Animation = "CJ_Idle_Side";
-            }
-        } 
-        else if (Input.IsActionJustReleased("up") && velocity.x == 0)
-        {
-            if (weaponEquipped)
-            {
-                animatedSprite.Animation = "CJ_Idle_Rifle_Back";
-            }
-            else
-            {
-                animatedSprite.Animation = "CJ_Idle_Back";
-            }
-        }
-        else if (Input.IsActionJustReleased("down") && velocity.x == 0)
-        {
-            if (weaponEquipped)
-            {
-                animatedSprite.Animation = "CJ_Idle_Rifle_Front";
-            }
-            else
-            {
-                animatedSprite.Animation = "CJ_Idle_Front";
-            }
-        }
+        if (velocity.Length() > 0)
+            velocity = velocity.Normalized() * speed;
 
         return velocity;
     }
 
-    // Called every frame. 'delta' is the elapsed time since the previous frame.
-    public override void _Process(float delta)
+    private void HandleWeaponInput(Vector2 velocity)
     {
-        var velocity = GetInput();
-        Rifle_Method();
-        
-        // Update player position
-        if (velocity.Length() > 0)
+        if (Input.IsActionPressed("equip") && !weaponEquipped)
         {
-            velocity = velocity.Normalized() * Speed;
+            weaponEquipped = true;
+            SetIdleAnimation(velocity);
         }
-        Position += velocity * delta;
+        else if (Input.IsActionPressed("unequip") && weaponEquipped)
+        {
+            weaponEquipped = false;
+            SetIdleAnimation(velocity);
+        }
+    }
 
-        // Clamp player position and camera zoom
-        Position = new Vector2(Mathf.Clamp(Position.x, -maxPositionX, maxPositionX), Mathf.Clamp(Position.y, -screenSize.y, screenSize.y));
-        camera.Zoom = new Vector2(Mathf.Clamp(camera.Zoom.x, .5f, 1), Mathf.Clamp(camera.Zoom.y, .5f, 1));
+    private void HorizontalAnimation(bool isRight)
+    {
+        bool running = Input.IsActionPressed("run");
+        speed = running ? runSpeed : walkSpeed;
 
-        // Keep the player's position the same relative to the camera
-        Scale = new Vector2(camera.Zoom.x, camera.Zoom.y);
-        
+        string moveType = running ? "_Run" : "_Walk";
+        string side = isRight ? "_Right" : "_Left";
+        string rifle = weaponEquipped ? "_Rifle" : "";
+
+        SetAnimation($"CJ{moveType}{side}{rifle}");
+    }
+
+    private void VerticalAnimation(bool isDown)
+    {
+        bool running = Input.IsActionPressed("run");
+        float zoomStep = running ? 0.012f : 0.006f;
+        camera.Zoom += new Vector2(zoomStep * (isDown ? 1 : -1), zoomStep * (isDown ? 1 : -1));
+
+        string moveType = running ? "_Run" : "_Walk";
+        string direction = isDown ? "_Front" : "_Back";
+        string rifle = weaponEquipped ? "_Rifle" : "";
+
+        SetAnimation($"CJ{moveType}{direction}{rifle}");
+    }
+
+    private void SetIdleAnimation(Vector2 velocity)
+    {
+        // Checking if player has stopped moving vertically
+        if (Input.IsActionJustReleased("forward") || Input.IsActionJustReleased("backwards"))
+            isZooming = false;
+
+        if (velocity != Vector2.Zero || isZooming)
+            return;
+
+        string rifle = weaponEquipped ? "_Rifle" : "";
+        string animationName = "CJ_Idle_";
+
+        switch (currentDirection)
+        {
+            case Direction.Back:
+                animationName += $"Back{rifle}";
+                break;
+            case Direction.Front:
+                animationName += $"Front{rifle}";
+                break;
+            case Direction.Right:
+                animationName += $"Right{rifle}";
+                break;
+            case Direction.Left:
+                animationName += $"Left{rifle}";
+                break;
+        }
+
+        SetAnimation(animationName);
+    }
+
+    private void SetAnimation(string animationName)
+    {
+        if (animatedSprite.Animation != animationName)
+            animatedSprite.Animation = animationName;
+    }
+
+    private void ClampPlayer()
+    {
+        // Clamp player position
+        Position = new Vector2(
+            Mathf.Clamp(Position.x, -maxPositionX, maxPositionX),
+            Mathf.Clamp(Position.y, -screenSize.y, screenSize.y)
+        );
+
+        // Clamp camera zoom
+        camera.Zoom = new Vector2(
+            Mathf.Clamp(camera.Zoom.x, 0.5f, 1),
+            Mathf.Clamp(camera.Zoom.y, 0.5f, 1)
+        );
+
+        // Adjust player scale relative to zoom
+        Scale = camera.Zoom;
     }
 }
