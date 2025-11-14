@@ -8,9 +8,11 @@ public class Player : KinematicBody2D
 
     private Vector2 screenSize;
     private AnimatedSprite animatedSprite;
+    private Sprite muzzleRight, muzzleLeft, muzzleFront, muzzleBack, currentMuzzle;
     private Camera2D camera;
     private float maxPositionX;
-    private bool weaponEquipped, isZooming;
+    private bool weaponEquipped, weaponAimed, weaponShoot, isZooming;
+    private Timer timer;
 
     private enum Direction {Back, Front, Right, Left};
     private Direction currentDirection = Direction.Back;
@@ -18,6 +20,7 @@ public class Player : KinematicBody2D
     public override void _Ready()
     {
         Engine.TargetFps = 30;
+        Input.MouseMode = Input.MouseModeEnum.Hidden;
 
         screenSize = GetViewportRect().Size;
 
@@ -28,9 +31,14 @@ public class Player : KinematicBody2D
 
         camera = GetNode<Camera2D>("Camera2D");
         animatedSprite = GetNode<AnimatedSprite>("AnimatedSprite");
+        muzzleRight = GetNode<Sprite>("AnimatedSprite/MuzzleRight");
+        muzzleLeft = GetNode<Sprite>("AnimatedSprite/MuzzleLeft");
+        muzzleFront = GetNode<Sprite>("AnimatedSprite/MuzzleFront");
+        muzzleBack = GetNode<Sprite>("AnimatedSprite/MuzzleBack");
+        timer = GetNode<Timer>("MuzzleFlashTimer");
 
-        // Setting initial player animation and spee
-        SetAnimation("CJ_Idle_Back");
+        // Setting initial player animation and speed
+        SetAnimation("Idle_Back");
         speed = walkSpeed;
     }
 
@@ -41,7 +49,7 @@ public class Player : KinematicBody2D
         // Updating player position
         Position += velocity * delta;
 
-        HandleWeaponInput(velocity);
+        WeaponEquip(velocity);
         ClampPlayer();
     }
     
@@ -49,29 +57,32 @@ public class Player : KinematicBody2D
     {
         Vector2 velocity = Vector2.Zero;
 
-        if (Input.IsActionPressed("left"))
+        if (!weaponShoot)
         {
-            currentDirection = Direction.Left;
-            velocity.x -= 1;
-            HorizontalAnimation(isRight: false);
-        }
-        else if (Input.IsActionPressed("right"))
-        {
-            currentDirection = Direction.Right;
-            velocity.x += 1;
-            HorizontalAnimation(isRight: true);
-        }
-        else if (Input.IsActionPressed("forward"))
-        {
-            currentDirection = Direction.Back;
-            isZooming = true;
-            VerticalAnimation(isDown: false);
-        }
-        else if (Input.IsActionPressed("backwards"))
-        {
-            currentDirection = Direction.Front;
-            isZooming = true;
-            VerticalAnimation(isDown: true);
+            if (Input.IsActionPressed("left"))
+            {
+                currentDirection = Direction.Left;
+                velocity.x -= 1;
+                HorizontalAnimation(isRight: false);
+            }
+            else if (Input.IsActionPressed("right"))
+            {
+                currentDirection = Direction.Right;
+                velocity.x += 1;
+                HorizontalAnimation(isRight: true);
+            }
+            else if (Input.IsActionPressed("forward"))
+            {
+                currentDirection = Direction.Back;
+                isZooming = true;
+                VerticalAnimation(isDown: false);
+            }
+            else if (Input.IsActionPressed("backwards"))
+            {
+                currentDirection = Direction.Front;
+                isZooming = true;
+                VerticalAnimation(isDown: true);
+            }
         }
 
         SetIdleAnimation(velocity);
@@ -79,46 +90,103 @@ public class Player : KinematicBody2D
         if (velocity.Length() > 0)
             velocity = velocity.Normalized() * speed;
 
-        return velocity;
+        return velocity; 
     }
 
-    private void HandleWeaponInput(Vector2 velocity)
+    private void WeaponEquip(Vector2 velocity)
     {
         if (Input.IsActionPressed("equip") && !weaponEquipped)
         {
             weaponEquipped = true;
-            SetIdleAnimation(velocity);
         }
         else if (Input.IsActionPressed("unequip") && weaponEquipped)
         {
             weaponEquipped = false;
-            SetIdleAnimation(velocity);
+            weaponAimed = false;
         }
+        SetIdleAnimation(velocity);
+        WeaponAim();
+    }
+
+    private void WeaponAim()
+    {
+        if (Input.IsActionJustPressed("aim") && weaponEquipped)
+        {
+            weaponAimed = !weaponAimed;
+        }
+        WeaponShoot();
+    }
+
+    private void WeaponShoot()
+    {
+        if (Input.IsActionJustPressed("shoot") && weaponAimed)
+        {
+            weaponShoot = true;
+
+            // Stopping vertical movement when shooting
+            isZooming = false;
+
+            switch (currentDirection)
+            {
+                case Direction.Right:
+                    currentMuzzle = muzzleRight;
+                    break;
+                case Direction.Left:
+                    currentMuzzle = muzzleLeft;
+                    break;
+                case Direction.Front:
+                    currentMuzzle = muzzleFront;
+                    break;
+                case Direction.Back:
+                    currentMuzzle = muzzleBack;
+                    break;
+            }
+
+            // Setting the timer for the muzzle flash animation
+            timer.Connect("timeout", this, "MuzzleAnimation", new Godot.Collections.Array { currentMuzzle });
+            timer.Start();
+        }
+        if (Input.IsActionJustReleased("shoot") && weaponAimed)
+        {
+            weaponShoot = false;
+            timer.Stop();
+            timer.Disconnect("timeout", this, "MuzzleAnimation");
+            currentMuzzle.Visible = false;
+        }
+    }
+    
+    private void MuzzleAnimation(Sprite currentMuzzle)
+    {
+
+        currentMuzzle.Visible = !currentMuzzle.Visible;
+        timer.Start();
     }
 
     private void HorizontalAnimation(bool isRight)
     {
-        bool running = Input.IsActionPressed("run");
+        bool running = Input.IsActionPressed("run") && !weaponAimed;
         speed = running ? runSpeed : walkSpeed;
 
-        string moveType = running ? "_Run" : "_Walk";
+        string moveType = running ? "Run" : "Walk";
         string side = isRight ? "_Right" : "_Left";
         string rifle = weaponEquipped ? "_Rifle" : "";
+        string aim = weaponAimed ? "_Aim" : "";
 
-        SetAnimation($"CJ{moveType}{side}{rifle}");
+        SetAnimation($"{moveType}{side}{rifle}{aim}");
     }
 
     private void VerticalAnimation(bool isDown)
     {
-        bool running = Input.IsActionPressed("run");
+        bool running = Input.IsActionPressed("run") && !weaponAimed;
         float zoomStep = running ? 0.012f : 0.006f;
         camera.Zoom += new Vector2(zoomStep * (isDown ? 1 : -1), zoomStep * (isDown ? 1 : -1));
 
-        string moveType = running ? "_Run" : "_Walk";
+        string moveType = running ? "Run" : "Walk";
         string direction = isDown ? "_Front" : "_Back";
         string rifle = weaponEquipped ? "_Rifle" : "";
+        string aim = weaponAimed ? "_Aim" : "";
 
-        SetAnimation($"CJ{moveType}{direction}{rifle}");
+        SetAnimation($"{moveType}{direction}{rifle}{aim}");
     }
 
     private void SetIdleAnimation(Vector2 velocity)
@@ -130,22 +198,24 @@ public class Player : KinematicBody2D
         if (velocity != Vector2.Zero || isZooming)
             return;
 
+        string animationName = "Idle_";
         string rifle = weaponEquipped ? "_Rifle" : "";
-        string animationName = "CJ_Idle_";
+        string aim = weaponAimed ? "_Aim" : "";
+        string shoot = weaponShoot ? "_Shoot" : "";
 
         switch (currentDirection)
         {
             case Direction.Back:
-                animationName += $"Back{rifle}";
+                animationName += $"Back{rifle}{aim}{shoot}";
                 break;
             case Direction.Front:
-                animationName += $"Front{rifle}";
+                animationName += $"Front{rifle}{aim}{shoot}";
                 break;
             case Direction.Right:
-                animationName += $"Right{rifle}";
+                animationName += $"Right{rifle}{aim}{shoot}";
                 break;
             case Direction.Left:
-                animationName += $"Left{rifle}";
+                animationName += $"Left{rifle}{aim}{shoot}";
                 break;
         }
 

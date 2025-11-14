@@ -1,223 +1,15 @@
-[gd_scene load_steps=98 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://background/Background_Right.png" type="Texture" id=1]
 [ext_resource path="res://background/Background_Left.png" type="Texture" id=2]
-[ext_resource path="res://CJ/animations/idle/font/Idle_Front_3.png" type="Texture" id=3]
+[ext_resource path="res://spriteframes/CJ_Animation_Frames.tres" type="SpriteFrames" id=3]
 [ext_resource path="res://background/Background_Center.png" type="Texture" id=4]
-[ext_resource path="res://CJ/animations/idle/back/Back_Idle_2.png" type="Texture" id=5]
-[ext_resource path="res://CJ/animations/idle/font/Idle_Front_1.png" type="Texture" id=6]
+[ext_resource path="res://CJ/muzzle/muzzle_texture_pixelated_front.png" type="Texture" id=5]
+[ext_resource path="res://CJ/muzzle/muzzle_texture_pixelated.png" type="Texture" id=6]
 [ext_resource path="res://scripts/Player.cs" type="Script" id=7]
-[ext_resource path="res://CJ/animations/idle/left/Idle_Left_1.png" type="Texture" id=8]
-[ext_resource path="res://CJ/animations/idle/left_rifle/Idle_Left_Rifle_2.png" type="Texture" id=9]
-[ext_resource path="res://CJ/animations/idle/font/Idle_Front_2.png" type="Texture" id=10]
-[ext_resource path="res://CJ/animations/idle/back/Back_Idle_1.png" type="Texture" id=11]
-[ext_resource path="res://CJ/animations/idle/back/Back_Idle_3.png" type="Texture" id=12]
-[ext_resource path="res://CJ/animations/idle/left_rifle/Idle_Left_Rifle_1.png" type="Texture" id=13]
 [ext_resource path="res://CJ/shadow/Drop_Shadow.png" type="Texture" id=14]
-[ext_resource path="res://CJ/animations/idle/right/Idle_Right_2.png" type="Texture" id=15]
-[ext_resource path="res://CJ/animations/idle/right/Idle_Right_3.png" type="Texture" id=16]
-[ext_resource path="res://CJ/animations/idle/left/Idle_Left_2.png" type="Texture" id=17]
-[ext_resource path="res://CJ/animations/walk/front/Walk_Front_2.png" type="Texture" id=18]
-[ext_resource path="res://CJ/animations/walk/front/Walk_Front_3.png" type="Texture" id=19]
-[ext_resource path="res://CJ/animations/idle/left/Idle_Left_3.png" type="Texture" id=20]
-[ext_resource path="res://CJ/animations/walk/front/Walk_Front_4.png" type="Texture" id=21]
-[ext_resource path="res://CJ/animations/walk/back/Walk_Back_4.png" type="Texture" id=22]
-[ext_resource path="res://CJ/animations/walk/back/Walk_Back_3.png" type="Texture" id=23]
-[ext_resource path="res://CJ/animations/walk/front/Walk_Front_1.png" type="Texture" id=24]
-[ext_resource path="res://CJ/animations/walk/back/Walk_Back_2.png" type="Texture" id=25]
-[ext_resource path="res://CJ/animations/walk/back/Walk_Back_1.png" type="Texture" id=26]
 [ext_resource path="res://background/Background_Right_2.png" type="Texture" id=27]
 [ext_resource path="res://background/Background_Left_2.png" type="Texture" id=28]
-[ext_resource path="res://CJ/animations/run/front/Run_Front_3.png" type="Texture" id=29]
-[ext_resource path="res://CJ/animations/run/front/Run_Front_4.png" type="Texture" id=30]
-[ext_resource path="res://CJ/animations/run/back/Run_Back_1.png" type="Texture" id=31]
-[ext_resource path="res://CJ/animations/idle/left_rifle/Idle_Left_Rifle_3.png" type="Texture" id=32]
-[ext_resource path="res://CJ/animations/run/back/Run_Back_3.png" type="Texture" id=33]
-[ext_resource path="res://CJ/animations/run/front/Run_Front_2.png" type="Texture" id=34]
-[ext_resource path="res://CJ/animations/walk/right_rifle/Walk_Right_Rifle_3.png" type="Texture" id=35]
-[ext_resource path="res://CJ/animations/walk/right/Walk_Right_3.png" type="Texture" id=36]
-[ext_resource path="res://CJ/animations/run/back/Run_Back_4.png" type="Texture" id=37]
-[ext_resource path="res://CJ/animations/run/right/Run_Right_4.png" type="Texture" id=38]
-[ext_resource path="res://CJ/animations/run/back/Run_Back_2.png" type="Texture" id=39]
-[ext_resource path="res://CJ/animations/run/front/Run_Front_1.png" type="Texture" id=40]
-[ext_resource path="res://CJ/animations/idle/back_rifle/Idle__Rifle_Back_2.png" type="Texture" id=41]
-[ext_resource path="res://CJ/animations/run/left_rifle/Run_Left_Rifle_2.png" type="Texture" id=42]
-[ext_resource path="res://CJ/animations/walk/left_rifle/Walk_Left_Rifle_1.png" type="Texture" id=43]
-[ext_resource path="res://CJ/animations/walk/left/Walk_Left_4.png" type="Texture" id=44]
-[ext_resource path="res://CJ/animations/idle/back_rifle/Idle__Rifle_Back_1.png" type="Texture" id=45]
-[ext_resource path="res://CJ/animations/idle/back_rifle/Idle__Rifle_Back_3.png" type="Texture" id=46]
-[ext_resource path="res://CJ/animations/idle/front_rifle/Idle__Rifle_Front_2.png" type="Texture" id=47]
-[ext_resource path="res://CJ/animations/idle/front_rifle/Idle__Rifle_Front_1.png" type="Texture" id=48]
-[ext_resource path="res://CJ/animations/idle/front_rifle/Idle__Rifle_Front_3.png" type="Texture" id=49]
-[ext_resource path="res://CJ/animations/run/right/Run_Right_1.png" type="Texture" id=50]
-[ext_resource path="res://CJ/animations/run/right_rifle/Run_Right_Rifle_4.png" type="Texture" id=51]
-[ext_resource path="res://CJ/animations/walk/right_rifle/Walk_Right_Rifle_2.png" type="Texture" id=52]
-[ext_resource path="res://CJ/animations/walk/back_rifle/Walk_Rifle_Back_1.png" type="Texture" id=53]
-[ext_resource path="res://CJ/animations/walk/back_rifle/Walk_Rifle_Back_3.png" type="Texture" id=54]
-[ext_resource path="res://CJ/animations/walk/back_rifle/Walk_Rifle_Back_4.png" type="Texture" id=55]
-[ext_resource path="res://CJ/animations/walk/front_rifle/Walk_Rifle_Front_4.png" type="Texture" id=56]
-[ext_resource path="res://CJ/animations/walk/front_rifle/Walk_Rifle_Front_1.png" type="Texture" id=57]
-[ext_resource path="res://CJ/animations/walk/front_rifle/Walk_Rifle_Front_3.png" type="Texture" id=58]
-[ext_resource path="res://CJ/animations/walk/right_rifle/Walk_Right_Rifle_4.png" type="Texture" id=59]
-[ext_resource path="res://CJ/animations/walk/left_rifle/Walk_Left_Rifle_4.png" type="Texture" id=60]
-[ext_resource path="res://CJ/animations/walk/left/Walk_Left_2.png" type="Texture" id=61]
-[ext_resource path="res://CJ/animations/walk/right_rifle/Walk_Right_Rifle_1.png" type="Texture" id=62]
-[ext_resource path="res://CJ/animations/walk/right/Walk_Right_4.png" type="Texture" id=63]
-[ext_resource path="res://CJ/animations/walk/right/Walk_Right_2.png" type="Texture" id=64]
-[ext_resource path="res://CJ/animations/walk/left_rifle/Walk_Left_Rifle_2.png" type="Texture" id=65]
-[ext_resource path="res://CJ/animations/walk/left_rifle/Walk_Left_Rifle_3.png" type="Texture" id=66]
-[ext_resource path="res://CJ/animations/walk/front_rifle/Walk_Rifle_Front_2.png" type="Texture" id=67]
-[ext_resource path="res://CJ/animations/walk/back_rifle/Walk_Rifle_Back_2.png" type="Texture" id=68]
-[ext_resource path="res://CJ/animations/run/back_rifle/Run_Rifle_Back_3.png" type="Texture" id=69]
-[ext_resource path="res://CJ/animations/run/back_rifle/Run_Rifle_Back_2.png" type="Texture" id=70]
-[ext_resource path="res://CJ/animations/run/back_rifle/Run_Rifle_Back_4.png" type="Texture" id=71]
-[ext_resource path="res://CJ/animations/run/back_rifle/Run_Rifle_Back_1.png" type="Texture" id=72]
-[ext_resource path="res://CJ/animations/run/front_rifle/Run_Rifle_Front_1.png" type="Texture" id=73]
-[ext_resource path="res://CJ/animations/walk/left/Walk_Left_3.png" type="Texture" id=74]
-[ext_resource path="res://CJ/animations/walk/left/Walk_Left_1.png" type="Texture" id=75]
-[ext_resource path="res://CJ/animations/run/right_rifle/Run_Right_Rifle_2.png" type="Texture" id=76]
-[ext_resource path="res://CJ/animations/run/right/Run_Right_3.png" type="Texture" id=77]
-[ext_resource path="res://CJ/animations/run/left_rifle/Run_Left_Rifle_3.png" type="Texture" id=78]
-[ext_resource path="res://CJ/animations/run/front_rifle/Run_Rifle_Front_3.png" type="Texture" id=79]
-[ext_resource path="res://CJ/animations/run/front_rifle/Run_Rifle_Front_4.png" type="Texture" id=80]
-[ext_resource path="res://CJ/animations/run/left_rifle/Run_Left_Rifle_4.png" type="Texture" id=81]
-[ext_resource path="res://CJ/animations/run/front_rifle/Run_Rifle_Front_2.png" type="Texture" id=82]
-[ext_resource path="res://CJ/animations/run/left_rifle/Run_Left_Rifle_1.png" type="Texture" id=83]
-[ext_resource path="res://CJ/animations/run/left/Run_Left_2.png" type="Texture" id=84]
-[ext_resource path="res://CJ/animations/walk/right/Walk_Right_1.png" type="Texture" id=85]
-[ext_resource path="res://CJ/animations/run/left/Run_Left_3.png" type="Texture" id=86]
-[ext_resource path="res://CJ/animations/run/right_rifle/Run_Right_Rifle_3.png" type="Texture" id=87]
-[ext_resource path="res://CJ/animations/run/right_rifle/Run_Right_Rifle_1.png" type="Texture" id=88]
-[ext_resource path="res://CJ/animations/run/right/Run_Right_2.png" type="Texture" id=89]
-[ext_resource path="res://CJ/animations/idle/right/Idle_Right_1.png" type="Texture" id=90]
-[ext_resource path="res://CJ/animations/run/left/Run_Left_4.png" type="Texture" id=91]
-[ext_resource path="res://CJ/animations/run/left/Run_Left_1.png" type="Texture" id=92]
-[ext_resource path="res://CJ/animations/idle/right_rifle/Idle_Right_Rifle_1.png" type="Texture" id=93]
-[ext_resource path="res://CJ/animations/idle/right_rifle/Idle_Right_Rifle_2.png" type="Texture" id=94]
-[ext_resource path="res://CJ/animations/idle/right_rifle/Idle_Right_Rifle_3.png" type="Texture" id=95]
-
-[sub_resource type="SpriteFrames" id=2]
-animations = [ {
-"frames": [ ExtResource( 11 ), ExtResource( 5 ), ExtResource( 12 ), ExtResource( 5 ) ],
-"loop": true,
-"name": "CJ_Idle_Back",
-"speed": 3.5
-}, {
-"frames": [ ExtResource( 45 ), ExtResource( 41 ), ExtResource( 46 ), ExtResource( 45 ) ],
-"loop": true,
-"name": "CJ_Idle_Back_Rifle",
-"speed": 3.5
-}, {
-"frames": [ ExtResource( 6 ), ExtResource( 10 ), ExtResource( 3 ), ExtResource( 10 ) ],
-"loop": true,
-"name": "CJ_Idle_Front",
-"speed": 3.5
-}, {
-"frames": [ ExtResource( 48 ), ExtResource( 47 ), ExtResource( 49 ), ExtResource( 48 ) ],
-"loop": true,
-"name": "CJ_Idle_Front_Rifle",
-"speed": 3.5
-}, {
-"frames": [ ExtResource( 8 ), ExtResource( 17 ), ExtResource( 20 ), ExtResource( 8 ) ],
-"loop": true,
-"name": "CJ_Idle_Left",
-"speed": 3.5
-}, {
-"frames": [ ExtResource( 13 ), ExtResource( 9 ), ExtResource( 32 ), ExtResource( 13 ) ],
-"loop": true,
-"name": "CJ_Idle_Left_Rifle",
-"speed": 3.5
-}, {
-"frames": [ ExtResource( 90 ), ExtResource( 15 ), ExtResource( 16 ), ExtResource( 90 ) ],
-"loop": true,
-"name": "CJ_Idle_Right",
-"speed": 3.5
-}, {
-"frames": [ ExtResource( 93 ), ExtResource( 94 ), ExtResource( 93 ), ExtResource( 95 ) ],
-"loop": true,
-"name": "CJ_Idle_Right_Rifle",
-"speed": 3.5
-}, {
-"frames": [ ExtResource( 31 ), ExtResource( 39 ), ExtResource( 33 ), ExtResource( 37 ) ],
-"loop": true,
-"name": "CJ_Run_Back",
-"speed": 7.0
-}, {
-"frames": [ ExtResource( 70 ), ExtResource( 69 ), ExtResource( 72 ), ExtResource( 71 ) ],
-"loop": true,
-"name": "CJ_Run_Back_Rifle",
-"speed": 7.0
-}, {
-"frames": [ ExtResource( 40 ), ExtResource( 34 ), ExtResource( 29 ), ExtResource( 30 ) ],
-"loop": true,
-"name": "CJ_Run_Front",
-"speed": 7.0
-}, {
-"frames": [ ExtResource( 82 ), ExtResource( 79 ), ExtResource( 80 ), ExtResource( 73 ) ],
-"loop": true,
-"name": "CJ_Run_Front_Rifle",
-"speed": 7.0
-}, {
-"frames": [ ExtResource( 84 ), ExtResource( 86 ), ExtResource( 91 ), ExtResource( 92 ) ],
-"loop": true,
-"name": "CJ_Run_Left",
-"speed": 7.0
-}, {
-"frames": [ ExtResource( 42 ), ExtResource( 78 ), ExtResource( 81 ), ExtResource( 83 ) ],
-"loop": true,
-"name": "CJ_Run_Left_Rifle",
-"speed": 7.0
-}, {
-"frames": [ ExtResource( 89 ), ExtResource( 77 ), ExtResource( 38 ), ExtResource( 50 ) ],
-"loop": true,
-"name": "CJ_Run_Right",
-"speed": 7.0
-}, {
-"frames": [ ExtResource( 76 ), ExtResource( 87 ), ExtResource( 51 ), ExtResource( 88 ) ],
-"loop": true,
-"name": "CJ_Run_Right_Rifle",
-"speed": 7.0
-}, {
-"frames": [ ExtResource( 25 ), ExtResource( 23 ), ExtResource( 22 ), ExtResource( 26 ) ],
-"loop": true,
-"name": "CJ_Walk_Back",
-"speed": 4.0
-}, {
-"frames": [ ExtResource( 68 ), ExtResource( 54 ), ExtResource( 55 ), ExtResource( 53 ) ],
-"loop": true,
-"name": "CJ_Walk_Back_Rifle",
-"speed": 4.0
-}, {
-"frames": [ ExtResource( 18 ), ExtResource( 19 ), ExtResource( 21 ), ExtResource( 24 ) ],
-"loop": true,
-"name": "CJ_Walk_Front",
-"speed": 4.0
-}, {
-"frames": [ ExtResource( 67 ), ExtResource( 58 ), ExtResource( 56 ), ExtResource( 57 ) ],
-"loop": true,
-"name": "CJ_Walk_Front_Rifle",
-"speed": 4.0
-}, {
-"frames": [ ExtResource( 61 ), ExtResource( 74 ), ExtResource( 44 ), ExtResource( 75 ) ],
-"loop": true,
-"name": "CJ_Walk_Left",
-"speed": 4.0
-}, {
-"frames": [ ExtResource( 65 ), ExtResource( 66 ), ExtResource( 60 ), ExtResource( 43 ) ],
-"loop": true,
-"name": "CJ_Walk_Left_Rifle",
-"speed": 4.0
-}, {
-"frames": [ ExtResource( 64 ), ExtResource( 36 ), ExtResource( 63 ), ExtResource( 85 ) ],
-"loop": true,
-"name": "CJ_Walk_Right",
-"speed": 4.0
-}, {
-"frames": [ ExtResource( 52 ), ExtResource( 35 ), ExtResource( 59 ), ExtResource( 62 ) ],
-"loop": true,
-"name": "CJ_Walk_Right_Rifle",
-"speed": 4.0
-} ]
 
 [sub_resource type="RectangleShape2D" id=1]
 
@@ -266,8 +58,8 @@ script = ExtResource( 7 )
 [node name="AnimatedSprite" type="AnimatedSprite" parent="Player"]
 position = Vector2( 0, 56 )
 scale = Vector2( 0.24, 0.24 )
-frames = SubResource( 2 )
-animation = "CJ_Idle_Back"
+frames = ExtResource( 3 )
+animation = "Idle_Back"
 playing = true
 
 [node name="DropShadow" type="Sprite" parent="Player/AnimatedSprite"]
@@ -277,6 +69,29 @@ scale = Vector2( 1.25, -0.833333 )
 z_index = -1
 texture = ExtResource( 14 )
 
+[node name="MuzzleRight" type="Sprite" parent="Player/AnimatedSprite"]
+visible = false
+position = Vector2( 387.5, -166.667 )
+scale = Vector2( 1.18221, 0.854 )
+texture = ExtResource( 6 )
+
+[node name="MuzzleLeft" type="Sprite" parent="Player/AnimatedSprite"]
+visible = false
+position = Vector2( -379.167, -166.667 )
+scale = Vector2( 1.18221, 0.854 )
+texture = ExtResource( 6 )
+flip_h = true
+
+[node name="MuzzleFront" type="Sprite" parent="Player/AnimatedSprite"]
+visible = false
+position = Vector2( -58.3333, -162.5 )
+scale = Vector2( 1.652, 1.195 )
+texture = ExtResource( 5 )
+
+[node name="MuzzleBack" type="Sprite" parent="Player/AnimatedSprite"]
+position = Vector2( -58.3333, -162.5 )
+scale = Vector2( 1.652, 1.195 )
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
 visible = false
 shape = SubResource( 1 )
@@ -285,3 +100,6 @@ shape = SubResource( 1 )
 visible = false
 current = true
 smoothing_enabled = true
+
+[node name="MuzzleFlashTimer" type="Timer" parent="Player"]
+wait_time = 0.06
