@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/ak47icon.png-696e3d6535aef478144ba84a4b0ecd4d.stex"
+path="res://.import/ArmorBarBackground.png-ccc690faf974073bc7e6367a26c61526.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://hud/ak47icon.png"
-dest_files=[ "res://.import/ak47icon.png-696e3d6535aef478144ba84a4b0ecd4d.stex" ]
+source_file="res://UI/HUD/ArmorBarBackground.png"
+dest_files=[ "res://.import/ArmorBarBackground.png-ccc690faf974073bc7e6367a26c61526.stex" ]
 
 [params]
 

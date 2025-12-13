@@ -1,28 +1,25 @@
 using Godot;
 using System;
+using System.Diagnostics;
 
 public class Player : KinematicBody2D
 {
     private const int walkSpeed = 80, runSpeed = 160, maxAmmoRounds = 50;
-    private int speed, currenAmmoRounds, extraAmmoRounds, ammoToLoad;
+    public int speed, currentAmmoRounds, extraAmmoRounds, ammoNeeded, ammoToLoad;
 
     private Vector2 screenSize;
     private AnimatedSprite animatedSprite;
     private Sprite muzzleRight, muzzleLeft, muzzleFront, muzzleBack, currentMuzzle;
-    private Camera2D camera;
+    public Camera2D camera;
     private float maxPositionX;
-    private bool weaponEquipped, weaponAimed, isShooting, isZooming, isReloading;
-    private Timer muzzleFlashTimer, ammoTimer, reloadTimer;
-    private Label AmmoUI;
+    public bool weaponEquipped, weaponAimed, isShooting, isZooming, isReloading, inputEnabled = true, enteredSceneA = true;
+    public Timer muzzleFlashTimer, ammoTimer, reloadTimer, enableInputTimer;
 
-    private enum Direction {Back, Front, Right, Left};
-    private Direction currentDirection = Direction.Back;
+    public enum Direction {Back, Front, Right, Left};
+    public Direction currentDirection = Direction.Back;
 
     public override void _Ready()
     {
-        Engine.TargetFps = 30;
-        Input.MouseMode = Input.MouseModeEnum.Hidden;
-
         screenSize = GetViewportRect().Size;
 
         // Each background sprite has a width of 320px. We have 5 sprites in total so 1600px of width.
@@ -39,23 +36,28 @@ public class Player : KinematicBody2D
         muzzleFlashTimer = GetNode<Timer>("MuzzleFlashTimer");
         ammoTimer = GetNode<Timer>("AmmoTimer");
         reloadTimer = GetNode<Timer>("ReloadTimer");
-        AmmoUI = GetNode<Label>("Ak47Icon/AmmoUI");
+        enableInputTimer = GetNode<Timer>("InputTimer");
 
         // Connecting timers for function loops
         reloadTimer.Connect("timeout", this, "AmmoReload");
+        enableInputTimer.Connect("timeout", this, "EnableInput");
         ammoTimer.Connect("timeout", this, "AmmoShoot");
         muzzleFlashTimer.Connect("timeout", this, "MuzzleAnimation");
 
         // Setting initial player animation and speed
         SetAnimation("Idle_Back");
         speed = walkSpeed;
+        camera.Zoom = new Vector2(0.71f, 0.71f);
 
-        extraAmmoRounds = maxAmmoRounds * 2;
-        currenAmmoRounds = maxAmmoRounds;
+        extraAmmoRounds = maxAmmoRounds * 23;
+        currentAmmoRounds = maxAmmoRounds;
     }
 
     public override void _Process(float delta)
     {
+        if (!inputEnabled) 
+            return;
+
         Vector2 velocity = GetMovementInput();
 
         // Updating player position
@@ -65,7 +67,8 @@ public class Player : KinematicBody2D
         ClampPlayer();
         AddAmmoRounds();
 
-        AmmoUI.Text = extraAmmoRounds.ToString() + "-" + currenAmmoRounds.ToString();
+        if (Input.IsActionJustPressed("quit"))
+            GetTree().Quit();
     }
     
     private Vector2 GetMovementInput()
@@ -135,7 +138,7 @@ public class Player : KinematicBody2D
 
     private void WeaponShoot()
     {
-        if (Input.IsActionJustPressed("shoot") && weaponAimed && !isReloading && currenAmmoRounds > 0)
+        if (Input.IsActionJustPressed("shoot") && weaponAimed && !isReloading && currentAmmoRounds > 0)
         {
             StartShooting();
         }
@@ -148,7 +151,7 @@ public class Player : KinematicBody2D
 
     private void WeaponReload()
     {
-        if (Input.IsActionPressed("reload") && weaponEquipped && !isReloading && currenAmmoRounds != maxAmmoRounds)
+        if (Input.IsActionPressed("reload") && weaponEquipped && !isReloading && currentAmmoRounds != maxAmmoRounds)
         {
             StartReload();
         }
@@ -179,10 +182,7 @@ public class Player : KinematicBody2D
         // Shooting effects
         muzzleFlashTimer.Start();
         ammoTimer.Start();
-
         currentMuzzle.Visible = true;
-
-        GD.Print("Shooting");
     }
 
     private void StopShooting()
@@ -197,11 +197,11 @@ public class Player : KinematicBody2D
     
     private void AmmoShoot()
     {
-        if (currenAmmoRounds > 0)
+        if (currentAmmoRounds > 0)
         {
-            currenAmmoRounds -= 1; 
+            currentAmmoRounds -= 1; 
 
-            if (currenAmmoRounds == 0)
+            if (currentAmmoRounds == 0)
             {
                 OutOfAmmo();
             }
@@ -223,28 +223,25 @@ public class Player : KinematicBody2D
         {
             isReloading = true;
             StopShooting();
-            reloadTimer.Start();
-
-            GD.Print("Reloading..");   
+            reloadTimer.Start();  
         }
     }
     
     private void AmmoReload()
     {
         isReloading = false;
+        weaponAimed = true;
         
         // Calculate the amount of ammo required for reload:
         // Choose the minimum value between the actual ammo needed to reach max ammo rounds and the extra ammo rounds left in reserve.
         // If current ammo is 45 and the max current ammo is 50 that means we need 5 ammmo rounds from the reserve.
         // If the extra ammo rounds value is less than 5 we will add this value to our current ammo value, otherwise we will add 5.
-        ammoToLoad = Math.Min(maxAmmoRounds - currenAmmoRounds, extraAmmoRounds);
+        ammoNeeded = maxAmmoRounds - currentAmmoRounds;
+        ammoToLoad = Math.Min(ammoNeeded, extraAmmoRounds);
 
-        currenAmmoRounds += ammoToLoad;
+        currentAmmoRounds += ammoToLoad;
         extraAmmoRounds -= ammoToLoad;
         
-        weaponAimed = true;
-        GD.Print("Reloaded");
-
         // Continue shooting if left click is still pressed
         if (Input.IsActionPressed("shoot"))
             StartShooting();
@@ -253,7 +250,12 @@ public class Player : KinematicBody2D
     private void MuzzleAnimation()
     {
         currentMuzzle.Visible = !currentMuzzle.Visible;
-        muzzleFlashTimer.Start(); // flicker effect
+        muzzleFlashTimer.Start(); // Flicker effect
+    }
+
+    private void EnableInput()
+    {
+        inputEnabled = true;
     }
 
     private void HorizontalAnimation(bool isRight)
@@ -281,9 +283,15 @@ public class Player : KinematicBody2D
         string aim = weaponAimed ? "_Aim" : "";
 
         SetAnimation($"{moveType}{direction}{rifle}{aim}");
+
+        if (camera.Zoom > new Vector2(0.9f, 0.9f))
+        {
+            // Handle player transition from GameManager
+            GameManager.Instance.PlayerSceneTransition();
+        }
     }
 
-    private void SetIdleAnimation(Vector2 velocity)
+    public void SetIdleAnimation(Vector2 velocity)
     {
         // Checking if player has stopped moving vertically
         if (Input.IsActionJustReleased("forward") || Input.IsActionJustReleased("backwards"))
