@@ -7,21 +7,26 @@
 [ext_resource path="res://CJ/muzzle/muzzle_texture_pixelated.png" type="Texture" id=6]
 
 [sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 42, 76.5 )
 
 [node name="Player" type="KinematicBody2D"]
 script = ExtResource( 2 )
+__meta__ = {
+"_edit_group_": true
+}
 
 [node name="AnimatedSprite" type="AnimatedSprite" parent="."]
 position = Vector2( 0, 55 )
 scale = Vector2( 0.24, 0.24 )
 frames = ExtResource( 1 )
-animation = "Idle_Front_Rifle_Reload"
+animation = "Walk_Front"
 playing = true
 
 [node name="DropShadow" type="Sprite" parent="AnimatedSprite"]
+modulate = Color( 1, 1, 1, 0.376471 )
 position = Vector2( 4.16675, 312.5 )
 rotation = 3.14159
-scale = Vector2( 1.25, -0.833333 )
+scale = Vector2( 1.9, -0.8 )
 z_index = -1
 texture = ExtResource( 3 )
 
@@ -49,8 +54,9 @@ position = Vector2( -58.3333, -162.5 )
 scale = Vector2( 1.652, 1.195 )
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
+position = Vector2( 0, 61.5 )
 shape = SubResource( 1 )
+disabled = true
 
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true

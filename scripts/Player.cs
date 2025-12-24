@@ -4,15 +4,17 @@ using System.Diagnostics;
 
 public class Player : KinematicBody2D
 {
+    [Signal]
+    public delegate void WeaponChanged(string iconName, bool ammoVisible);
     private const int walkSpeed = 80, runSpeed = 160, maxAmmoRounds = 50;
-    public int speed, currentAmmoRounds, extraAmmoRounds, ammoNeeded, ammoToLoad;
-
-    private Vector2 screenSize;
+    public int speed, currentAmmoRounds, extraAmmoRounds, ammoNeeded, ammoToLoad, money;
+    private string iconName;
+    private Vector2 velocity, screenSize;
     private AnimatedSprite animatedSprite;
     private Sprite muzzleRight, muzzleLeft, muzzleFront, muzzleBack, currentMuzzle;
     public Camera2D camera;
-    private float maxPositionX;
-    public bool weaponEquipped, weaponAimed, isShooting, isZooming, isReloading, inputEnabled = true, enteredSceneA = true;
+    public float maxPositionX;
+    public bool weaponEquipped, weaponAimed, isShooting, isZooming, isReloading, inputEnabled = true, enteredSceneA = true, ammoVisible, sceneTransitioning = false;
     public Timer muzzleFlashTimer, ammoTimer, reloadTimer, enableInputTimer;
 
     public enum Direction {Back, Front, Right, Left};
@@ -51,6 +53,7 @@ public class Player : KinematicBody2D
 
         extraAmmoRounds = maxAmmoRounds * 23;
         currentAmmoRounds = maxAmmoRounds;
+        money = 86587;
     }
 
     public override void _Process(float delta)
@@ -58,14 +61,18 @@ public class Player : KinematicBody2D
         if (!inputEnabled) 
             return;
 
-        Vector2 velocity = GetMovementInput();
+        velocity = GetMovementInput();
 
         // Updating player position
         Position += velocity * delta;
 
-        WeaponEquip(velocity);
+        // Ensures correct depth visibility based on scale
+        ZIndex = Mathf.RoundToInt(Scale.x * 100);
+
+        WeaponEquip();
         ClampPlayer();
         AddAmmoRounds();
+        AddMoney();
 
         if (Input.IsActionJustPressed("quit"))
             GetTree().Quit();
@@ -73,37 +80,36 @@ public class Player : KinematicBody2D
     
     private Vector2 GetMovementInput()
     {
-        Vector2 velocity = Vector2.Zero;
-
+        velocity = Vector2.Zero;
         if (!isShooting && !isReloading)
         {
             if (Input.IsActionPressed("left"))
             {
                 currentDirection = Direction.Left;
-                velocity.x -= 1;
-                HorizontalAnimation(isRight: false);
+                velocity.x = -1;
+                HorizontalAnimation();
             }
             else if (Input.IsActionPressed("right"))
             {
                 currentDirection = Direction.Right;
-                velocity.x += 1;
-                HorizontalAnimation(isRight: true);
+                velocity.x = 1;
+                HorizontalAnimation();
             }
             else if (Input.IsActionPressed("forward"))
             {
-                currentDirection = Direction.Back;
+                currentDirection = sceneTransitioning ? Direction.Front : Direction.Back;
                 isZooming = true;
-                VerticalAnimation(isDown: false);
+                VerticalAnimation();
             }
             else if (Input.IsActionPressed("backwards"))
             {
-                currentDirection = Direction.Front;
+                currentDirection = sceneTransitioning ? Direction.Back : Direction.Front;
                 isZooming = true;
-                VerticalAnimation(isDown: true);
+                VerticalAnimation();
             }
         }
 
-        SetIdleAnimation(velocity);
+        SetIdleAnimation();
 
         if (velocity.Length() > 0)
             velocity = velocity.Normalized() * speed;
@@ -111,18 +117,28 @@ public class Player : KinematicBody2D
         return velocity; 
     }
 
-    private void WeaponEquip(Vector2 velocity)
+    private void WeaponEquip()
     {
-        if ((Input.IsActionPressed("equip") || Input.IsActionJustPressed("cycleWeapons")) && !weaponEquipped)
+        if (!isReloading) 
         {
-            weaponEquipped = true;
+            if ((Input.IsActionPressed("equip") || Input.IsActionJustPressed("cycleWeapons")) && !weaponEquipped)
+            {
+                weaponEquipped = true;
+                iconName = "ak47";
+                ammoVisible = true;
+                EmitSignal(nameof(WeaponChanged), iconName, ammoVisible);
+            }
+            else if ((Input.IsActionPressed("unequip") || Input.IsActionJustPressed("cycleWeapons")) && weaponEquipped)
+            {
+                weaponEquipped = false;
+                weaponAimed = false;
+                iconName = "fist";
+                ammoVisible = false;
+                EmitSignal(nameof(WeaponChanged), iconName, ammoVisible);
+            }           
         }
-        else if ((Input.IsActionPressed("unequip") || Input.IsActionJustPressed("cycleWeapons")) && weaponEquipped)
-        {
-            weaponEquipped = false;
-            weaponAimed = false;
-        }
-        SetIdleAnimation(velocity);
+
+        SetIdleAnimation();
         WeaponAim();
         WeaponReload();
     }
@@ -130,39 +146,36 @@ public class Player : KinematicBody2D
     private void WeaponAim()
     {
         if (Input.IsActionJustPressed("aim") && weaponEquipped)
-        {
             weaponAimed = !weaponAimed;
-        }
+
         WeaponShoot();
     }
 
     private void WeaponShoot()
     {
         if (Input.IsActionJustPressed("shoot") && weaponAimed && !isReloading && currentAmmoRounds > 0)
-        {
             StartShooting();
-        }
 
         if (Input.IsActionJustReleased("shoot") && isShooting)
-        {
             StopShooting();
-        }
     }
 
     private void WeaponReload()
     {
         if (Input.IsActionPressed("reload") && weaponEquipped && !isReloading && currentAmmoRounds != maxAmmoRounds)
-        {
             StartReload();
-        }
     }
 
     private void AddAmmoRounds()
     {
-        if (Input.IsActionPressed("addAmmo"))
-        {
+        if (Input.IsActionPressed("addAmmo") && weaponEquipped)
             extraAmmoRounds += 200;
-        }
+    }
+
+    public void AddMoney()
+    {
+        if (Input.IsActionPressed("addMoney"))
+            money += 200;
     }
 
     private void StartShooting()
@@ -258,44 +271,51 @@ public class Player : KinematicBody2D
         inputEnabled = true;
     }
 
-    private void HorizontalAnimation(bool isRight)
+    private void HorizontalAnimation()
     {
         bool running = Input.IsActionPressed("run") && !weaponAimed;
+        bool facingRight = currentDirection == Direction.Right;
         speed = running ? runSpeed : walkSpeed;
 
         string moveType = running ? "Run" : "Walk";
-        string side = isRight ? "_Right" : "_Left";
+        string side = facingRight ? "_Right" : "_Left";
         string rifle = weaponEquipped ? "_Rifle" : "";
         string aim = weaponAimed ? "_Aim" : "";
 
-        SetAnimation($"{moveType}{side}{rifle}{aim}");
+        if (Position.x > -maxPositionX && Position.x < maxPositionX)
+            SetAnimation($"{moveType}{side}{rifle}{aim}");
     }
 
-    private void VerticalAnimation(bool isDown)
+    public void VerticalAnimation()
     {
         bool running = Input.IsActionPressed("run") && !weaponAimed;
+        bool facingFront = currentDirection == Direction.Front;
         float zoomStep = running ? 0.012f : 0.006f;
-        camera.Zoom += new Vector2(zoomStep * (isDown ? 1 : -1), zoomStep * (isDown ? 1 : -1));
+        camera.Zoom += new Vector2(zoomStep * (facingFront ? 1 : -1), zoomStep * (facingFront ? 1 : -1));
 
         string moveType = running ? "Run" : "Walk";
-        string direction = isDown ? "_Front" : "_Back";
+        string direction = facingFront ? "_Front" : "_Back";
         string rifle = weaponEquipped ? "_Rifle" : "";
         string aim = weaponAimed ? "_Aim" : "";
 
-        SetAnimation($"{moveType}{direction}{rifle}{aim}");
+        if (camera.Zoom > new Vector2(0.5f, 0.5f))
+            SetAnimation($"{moveType}{direction}{rifle}{aim}");
 
-        if (camera.Zoom > new Vector2(0.9f, 0.9f))
+        if (camera.Zoom > new Vector2(0.99f, 0.99f) && !sceneTransitioning)
         {
             // Handle player transition from GameManager
             GameManager.Instance.PlayerSceneTransition();
         }
     }
 
-    public void SetIdleAnimation(Vector2 velocity)
+    public void SetIdleAnimation()
     {
         // Checking if player has stopped moving vertically
         if (Input.IsActionJustReleased("forward") || Input.IsActionJustReleased("backwards"))
+        {
             isZooming = false;
+            sceneTransitioning = false;           
+        }
 
         if (velocity != Vector2.Zero || isZooming)
             return;
@@ -317,7 +337,7 @@ public class Player : KinematicBody2D
         SetAnimation(animationName);
     }
 
-    private void SetAnimation(string animationName)
+    public void SetAnimation(string animationName)
     {
         if (animatedSprite.Animation != animationName)
             animatedSprite.Animation = animationName;

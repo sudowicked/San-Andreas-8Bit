@@ -7,10 +7,13 @@ public class GameManager : Node
 
     readonly PackedScene playerScene = GD.Load<PackedScene>("res://scenes/Player.tscn");
     readonly PackedScene HUDScene = GD.Load<PackedScene>("res://scenes/HUD.tscn");
+    private ParallaxBackground sceneA, sceneB;
+    private Node2D sceneAEnemies;
 
-    public Player Player;
+    public Player player;
+  
     private HUD HUD;
-    private Node2D Level;
+    
 
     public override void _Ready()
     {
@@ -18,7 +21,13 @@ public class GameManager : Node
         Input.MouseMode = Input.MouseModeEnum.Hidden;
         Instance = this;
         LoadPersistentObjects();
-        ChangeScene("res://scenes/Level_A.tscn");
+        
+        sceneA = GetNode<ParallaxBackground>("Scenes/Scene_A/ParallaxBackground");
+        sceneAEnemies = GetNode<Node2D>("Scenes/Scene_A/World");
+        sceneB = GetNode<ParallaxBackground>("Scenes/Scene_B/ParallaxBackground");
+
+        // Hiding scene B when starting the game
+        sceneB.Visible = false;
     }
 
     // Load player and HUD as persistent objects throughout the game
@@ -26,40 +35,23 @@ public class GameManager : Node
     {
         var persistent = GetNode("Persistent");
 
-        Player = playerScene.Instance() as Player;
-        persistent.AddChild(Player);           
+        player = playerScene.Instance() as Player;
+        persistent.AddChild(player);           
 
         HUD = HUDScene.Instance() as HUD;
         persistent.AddChild(HUD);
-    }
-    
-    public void ChangeScene(string path)
-    {
-        var scenes = GetNode("Scenes");
-
-        // Clear previous scene from display
-        foreach(Node2D child in scenes.GetChildren()) 
-            child.QueueFree();
-
-        PackedScene worldScene = GD.Load<PackedScene>(path);
-        Level = worldScene.Instance() as Node2D;
-        scenes.AddChild(Level);
     }
 
     // Handle player transition when changing scenes
     public void PlayerSceneTransition()
     {
-        string scene = Player.enteredSceneA ? "B" : "A";
-        Player.enteredSceneA = !Player.enteredSceneA;
-        ChangeScene($"res://scenes/Level_{scene}.tscn");
-
-        Player.inputEnabled = false;
-        Player.isZooming = false;   
-        Player.currentDirection = Player.Direction.Back;  
-        Player.camera.Zoom = new Vector2(0.71f, 0.71f);
-        Player.Position = new Vector2(-Player.Position.x, Player.Position.y);
-        Player.SetIdleAnimation(Vector2.Zero);
-
-        Player.enableInputTimer.Start(); // Enable input after 2 seconds  
+        player.enteredSceneA = !player.enteredSceneA;
+        sceneA.Visible = player.enteredSceneA;
+        sceneAEnemies.Visible = player.enteredSceneA;
+        sceneB.Visible = !player.enteredSceneA;
+        
+        player.sceneTransitioning = true;  
+        player.camera.Zoom = new Vector2(0.98f, 0.98f);
+        player.Position = new Vector2(-player.Position.x, player.Position.y);
     }
 }
